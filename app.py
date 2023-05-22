@@ -20,34 +20,27 @@ def notify():
   if (len(logs) == 0):
     print("Empty logs array received, skipping")
   else:    
+      #message = "Event log: "
+      #bot.send_message(chat_id=user_chat_id, text=message)
+      #message = logs
+      #bot.send_message(chat_id=user_chat_id, text=message)
       
-      print(logs)
-      
-      category = ""
-      try:
-         category = logs['event']['activity'][0]['category']
-      except:
-         print("category not defined")
-      
-      if logs['webhookId']==os.environ['ALCHEMY_KEY'] and category == 'token':
+      if logs['webhookId']==os.environ['ALCHEMY_KEY'] and logs['event']['activity'][0]['category'] == 'token':
         # extract the necessary information
-        txhash = from_address = "["+str(logs['event']['activity'][0]['hash'])+"](https://etherscan.io/tx/"+str(logs['event']['activity'][0]['hash'])+")"
-         
-        from_address = "["+str(logs['event']['activity'][0]['fromAddress'])+"](https://etherscan.io/address/"+str(logs['event']['activity'][0]['fromAddress'])+"#tokentxns)"
-        to_address = "["+str(logs['event']['activity'][0]['toAddress'])+"](https://etherscan.io/address/"+str(logs['event']['activity'][0]['toAddress'])+"#tokentxns)"
-        
+        from_address = logs['event']['activity'][0]['fromAddress']
+        to_address = logs['event']['activity'][0]['toAddress']
         token_symbol = logs['event']['activity'][0]['asset']
-        token_address = "["+str(logs['event']['activity'][0]['rawContract']['address'])+"](https://etherscan.io/address/"+str(logs['event']['activity'][0]['rawContract']['address'])+")"
-        
-        value = str(round(logs['event']['activity'][0]['value']))
+        token_address = logs['event']['activity'][0]['rawContract']['address']
+        value = logs['event']['activity'][0]['value']
 
         # create the text string
-        message = f'*Token transfer:*\n{txhash}\nfrom {from_address} \nto {to_address}: \nvalue: {value} *{token_symbol}* {token_address}'
-        bot.send_message(chat_id=user_chat_id, text=message, parse_mode='MarkdownV2')
+        message = f'Token transfer: from {from_address} to {to_address}: value: {value} {token_symbol} {token_address}'
+        bot.send_message(chat_id=user_chat_id, text=message)
       
   return Response(status=200)
 
 updater = Updater(TELEGRAM_API_TOKEN)
+
 # Start the bot
 updater.start_polling()
 
